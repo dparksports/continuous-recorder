@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-lightgrey)
-![Tests](https://img.shields.io/badge/unit%20tests-34-lightgrey)
+![Tests](https://img.shields.io/badge/unit%20tests-45-lightgrey)
 ![Status](https://img.shields.io/badge/build-never%20compiled-orange)
 
 A native SwiftUI app for an always-on iPad: continuous audio that survives screen lock, an
@@ -74,6 +74,26 @@ it is a mains-only option; the chain payload carries the same numbers for free.
 tiers, what `NWPathMonitor` does and does not prove, and the clock-drift consequence of
 Airplane Mode on a watermark that is supposed to be evidence.
 
+## Motion: did someone touch it?
+
+`MotionMonitor` samples device motion at 10 Hz; `MotionClassifier` runs a two-threshold
+hysteresis over acceleration, angular velocity and the gravity vector. When it enters
+"moving" it arms `SnapshotGate`, and the video pipeline hands over **one frame per second**
+for as long as the episode lasts. Each frame is JPEG'd at 1280 px, hashed, and listed in an
+`event.json` that is signed into the chain as a single link.
+
+The interesting signal is not "it moved" — a lorry outside will do that all day — it is
+`reaimed`: a gravity change above 5° means the device is now pointing somewhere else. A
+knock keeps `reaimed: false`. Two thresholds, not one, because a single threshold chatters on
+every vibration and a system that chatters is a system whose alerts get ignored.
+
+Two caveats worth knowing before relying on it, both in
+[`Docs/MOTION.md`](RecorderApp/Docs/MOTION.md): gravity cannot see yaw, so a flat device spun
+in place is recorded as an event but not as a re-aim; and in full video mode the stills are
+redundancy — for retrieval, for alerting, and for the hour a power cut leaves unplayable —
+not the proof itself. Each snapshot carries its video presentation time, so a reviewer can
+seek the exact frame instead of guessing from wall clock.
+
 ## Why the code looks the way it does
 
 | Decision | Reason |
@@ -128,9 +148,14 @@ Airplane Mode on a watermark that is supposed to be evidence.
    │  │  ├─ TelemetryFormat.swift     deterministic stamp text + drift
    │  │  ├─ TelemetryWatermark.swift  the on-screen stamp and issue list
    │  │  └─ WatermarkComposer.swift   optional burn-in before hashing
+   │  ├─ Motion/
+   │  │  ├─ MotionMonitor.swift        CoreMotion at 10 Hz
+   │  │  ├─ MotionClassifier.swift     hysteresis, bump versus re-aim
+   │  │  ├─ MotionSnapshots.swift      snapshot gate + JPEG encoder
+   │  │  └─ MotionEventRecorder.swift   event JSON, per-frame hashes, one chain link
    │  ├─ UI/                           RecorderViewModel + ContentView
    │  └─ Resources/Info.plist          mic + camera usage, background audio
-   ├─ Tests/                          34 unit tests
+   ├─ Tests/                          45 unit tests
    ├─ Tools/
    │  ├─ runtime_estimate.py          power/storage model, audio and video modes
    │  └─ sanity_check.py              structural lint + plist validation
@@ -139,6 +164,7 @@ Airplane Mode on a watermark that is supposed to be evidence.
       ├─ POWER-AND-DISPLAY.md
       ├─ TAMPER-EVIDENCE.md
       ├─ KIOSK-MODE.md
+      ├─ MOTION.md
       └─ MAC-HANDOFF.md
 ```
 
@@ -194,7 +220,7 @@ python scripts/release.py           # CI → tag → push → gh release, notes 
 `release.py` refuses to run on a dirty tree, on a branch other than `main`, on a version
 that has no CHANGELOG section, or when local CI fails.
 
-The macOS `build` job is the part that actually compiles and runs the 34 unit tests. It has
+The macOS `build` job is the part that actually compiles and runs the 45 unit tests. It has
 never executed — expect to fix a handful of things on its first run, and treat its first
 green as the real 1.0.
 
@@ -204,7 +230,7 @@ Verified here, repeatedly:
 
 ```bash
 python scripts/local_ci.py                                 # 8 checks, all green
-python RecorderApp/Tools/sanity_check.py                   # 28 Swift files, 0 issues
+python RecorderApp/Tools/sanity_check.py                   # 33 Swift files, 0 issues
 python RecorderApp/Tools/runtime_estimate.py --mode video   # the numbers above
 ```
 
@@ -212,7 +238,7 @@ Both local CI failure paths were exercised on purpose — an unclosed brace in a
 and a dead markdown link each turn it red.
 
 Not verified, because there is no Swift toolchain or iOS SDK on this machine:
-**compilation, the 34 unit tests, and every line of audio, camera and Keychain behaviour.**
+**compilation, the 45 unit tests, and every line of audio, camera and Keychain behaviour.**
 The Secure Enclave path cannot be exercised anywhere but a real device with a passcode —
 the simulator has no SE, which is why `SoftwareSigner` exists and why links record which one
 signed them.

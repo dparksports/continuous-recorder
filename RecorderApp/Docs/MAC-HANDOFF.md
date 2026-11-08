@@ -81,7 +81,7 @@ Do not trust it until you have done these five things on the device:
    re-run (expect *file content changed*), and delete the middle link and re-run (expect
    *previous hash does not match*). If both pass, the chain is doing its job.
 
-Run the unit tests with ⌘U — 34 of them. They cover the energy arithmetic, coverage
+Run the unit tests with ⌘U — 45 of them. They cover the energy arithmetic, coverage
 accounting, the power-governor policy and the hash chain, including the case the chain
 *cannot* catch (truncation). None of them touch audio hardware, the camera or the Secure
 Enclave, so they also pass in CI and on the simulator, where `SoftwareSigner` stands in for

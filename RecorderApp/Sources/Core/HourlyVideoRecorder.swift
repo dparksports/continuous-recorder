@@ -67,6 +67,12 @@ final class HourlyVideoRecorder: NSObject {
     var onSegmentClosed: ((VideoSegmentRecord) -> Void)?
     var onFailure: ((String) -> Void)?
 
+    /// Frames are offered to `snapshotHandler` at most once per second while the gate is
+    /// open. Set before `start()`; the gate itself is lock-protected because the motion
+    /// recorder opens and closes it from a different queue.
+    var snapshotHandler: ((CMSampleBuffer) -> Void)?
+    let snapshotGate = SnapshotGate()
+
     private let session = AVCaptureSession()
     private let output = AVCaptureVideoDataOutput()
     private let sessionQueue = DispatchQueue(label: "com.example.recorderapp.video.session")
@@ -323,6 +329,10 @@ extension HourlyVideoRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
         if !input.append(sampleBuffer) {
             segmentDroppedFrames += 1
+        }
+
+        if let snapshotHandler, snapshotGate.shouldCapture(at: Date()) {
+            snapshotHandler(sampleBuffer)
         }
     }
 

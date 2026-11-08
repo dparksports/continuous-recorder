@@ -46,9 +46,13 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   top-edge stamp with timestamp, battery and charging state), `WatermarkComposer` (optional
   burn-in, applied before the hash so the chain covers the stamped bytes), and
   `UIRequiresFullScreen` to block Slide Over.
-- **Tests**: 34 unit tests covering energy arithmetic, coverage accounting, power
-  policy, chain verification (including the truncation case the chain cannot catch) and the
-  kiosk policy / watermark formatting rules.
+- **Motion events**: `MotionMonitor` (10 Hz device motion), `MotionClassifier` (two-threshold
+  hysteresis over acceleration, rotation and gravity; bump versus re-aim), `SnapshotGate` /
+  `MotionSnapshotStore` (one 1280 px JPEG per second while moving, carrying the video PTS),
+  `MotionEventRecorder` (event JSON containing every frame hash, signed as one chain link).
+- **Tests**: 45 unit tests covering energy arithmetic, coverage accounting, power
+  policy, chain verification (including the truncation case the chain cannot catch), kiosk
+  policy / watermark formatting, and the motion classifier and snapshot gate.
 - **Tooling**: `Tools/runtime_estimate.py` (audio and video power/storage model),
   `Tools/sanity_check.py` (brace/string-aware structural lint, plist validation),
   `scripts/local_ci.py`, `scripts/release.py`.
