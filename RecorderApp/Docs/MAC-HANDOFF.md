@@ -81,7 +81,7 @@ Do not trust it until you have done these five things on the device:
    re-run (expect *file content changed*), and delete the middle link and re-run (expect
    *previous hash does not match*). If both pass, the chain is doing its job.
 
-Run the unit tests with ⌘U — 45 of them. They cover the energy arithmetic, coverage
+Run the unit tests with ⌘U — 54 of them. They cover the energy arithmetic, coverage
 accounting, the power-governor policy and the hash chain, including the case the chain
 *cannot* catch (truncation). None of them touch audio hardware, the camera or the Secure
 Enclave, so they also pass in CI and on the simulator, where `SoftwareSigner` stands in for
@@ -109,12 +109,16 @@ failed before the engine started — check `Log.session` output for the thrown e
 
 - **No app icon and no launch storyboard artwork.** Xcode's default is fine for testing;
   an App Store submission needs both.
-- **Video and tamper-evidence are not wired into the UI.** `HourlyVideoRecorder` and
-  `TamperChain` are complete and self-contained, but nothing calls them yet — the README
-  shows the ~20 lines of integration. Keeping that seam explicit means the audio path, which
-  is the one that runs for days, stays reviewable.
-- **No file-listing UI.** Recordings are reachable through the Files app via Document
-  Sharing, which is enough for retrieval and keeps the code small.
+- **Video, tamper-evidence, kiosk and sharing are not wired into the UI.** `HourlyVideoRecorder`,
+  `TamperChain`, `KioskController`, `MotionEventRecorder` and `EvidenceShareController` are
+  complete and self-contained, but the view model does not drive them yet — the README shows
+  the integration. Keeping that seam explicit means the audio path, which is the one that
+  runs for days, stays reviewable.
+- **No file browser in the app.** Recordings live in `Library/Recordings` and reach a Mac only
+  through the authenticated share window (`Docs/SHARING.md`). That is deliberate: a
+  standing folder is a standing exposure.
+- **No transfer progress UI.** The share window shows a countdown, not bytes remaining — iOS
+  does not report how much a Mac has pulled.
 - **No upload/sync.** If this becomes a real product, upload is where the power budget
   goes to die; batch it over Wi-Fi while charging.
 - **No encryption at rest.** For a device that records continuously, enable Data

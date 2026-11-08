@@ -107,7 +107,7 @@ turns theft into an inconvenience.
 | Single App Mode | The app cannot be exited; the home gesture, notification banners and app switcher are gone |
 | Guided Access (no MDM) | Poor man's version: triple-click to lock the app on screen |
 | Passcode + "Erase Data" | 10 failed attempts wipes; note this also destroys the chain key |
-| **Turn off `UIFileSharingEnabled` in production** | The convenience flag in the shipped `Info.plist` lets anyone with the device browse, copy and delete recordings through Files. Keep it while developing, remove it in the field |
+| **File sharing, if you enable it** | The flag itself cannot be gated — it is read at launch. Keep recordings in `Library/Recordings` and expose them only through the authenticated, time-boxed window in `Docs/SHARING.md`. Otherwise anyone with the device can browse, copy and delete through Files |
 | USB Restricted Mode | On by default; do not disable it for a "convenient" charging cable |
 | No iCloud backup for the folder | Already set via `isExcludedFromBackup`; a 43 GB/day video stream must never hit iCloud |
 | Disable screenshot/screen recording (supervised) | Stops a bystander exfiltrating a live frame |
@@ -174,7 +174,8 @@ form.
 
 - [ ] Supervised device, MDM profile, Single App Mode
 - [ ] Passcode set, Erase Data on, USB Restricted Mode left alone
-- [ ] `UIFileSharingEnabled` removed from `Info.plist`
+- [ ] Recordings live in `Library/Recordings`, not `Documents`; sharing goes through the
+      authenticated window (`Docs/SHARING.md`), never through a standing folder
 - [ ] Public key exported and filed with the retention policy
 - [ ] `Signing key tag` recorded — rotating it changes the identity
 - [ ] Collector: object lock / WORM bucket, retention ≥ your evidence obligation

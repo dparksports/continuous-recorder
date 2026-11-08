@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-lightgrey)
-![Tests](https://img.shields.io/badge/unit%20tests-45-lightgrey)
+![Tests](https://img.shields.io/badge/unit%20tests-54-lightgrey)
 ![Status](https://img.shields.io/badge/build-never%20compiled-orange)
 
 A native SwiftUI app for an always-on iPad: continuous audio that survives screen lock, an
@@ -94,6 +94,24 @@ redundancy — for retrieval, for alerting, and for the hour a power cut leaves 
 not the proof itself. Each snapshot carries its video presentation time, so a reviewer can
 seek the exact frame instead of guessing from wall clock.
 
+## Sharing with a Mac, behind Face ID
+
+`UIFileSharingEnabled` is read at launch and cannot be gated at runtime, so the gate is on the
+contents. Recordings live in `Library/Recordings`, which File Sharing never exposes. Opening a
+window — after `LAContext.evaluatePolicy(.deviceOwnerAuthentication)`, i.e. Face ID or Touch ID
+with the passcode as fallback — creates **hard links** under `Documents/Share/<stamp>/`.
+
+Hard links are what make this cheap and safe: instant even for 40 GB, no extra disk, and
+unlinking them cannot touch the original. The window closes on expiry (10 minutes), on
+backgrounding, and when the device locks; locking mid-copy aborts the transfer, which is the
+intended trade and why the countdown is on screen. Every open and close lands in
+`share-access.jsonl`.
+
+If no passcode is set, `canEvaluatePolicy` returns false and sharing is **refused with an
+explanation** rather than falling open — the failure mode of an access control has to be
+closed. Details, including what this does not protect against:
+[`Docs/SHARING.md`](RecorderApp/Docs/SHARING.md).
+
 ## Why the code looks the way it does
 
 | Decision | Reason |
@@ -153,9 +171,13 @@ seek the exact frame instead of guessing from wall clock.
    │  │  ├─ MotionClassifier.swift     hysteresis, bump versus re-aim
    │  │  ├─ MotionSnapshots.swift      snapshot gate + JPEG encoder
    │  │  └─ MotionEventRecorder.swift   event JSON, per-frame hashes, one chain link
+   │  ├─ Sharing/
+   │  │  ├─ SharePlan.swift            which files, and what truncation costs
+   │  │  ├─ DeviceAuthenticator.swift  LAContext seam; Face ID + passcode fallback
+   │  │  └─ EvidenceShareController.swift  hard-link window, timers, access log
    │  ├─ UI/                           RecorderViewModel + ContentView
    │  └─ Resources/Info.plist          mic + camera usage, background audio
-   ├─ Tests/                          45 unit tests
+   ├─ Tests/                          54 unit tests
    ├─ Tools/
    │  ├─ runtime_estimate.py          power/storage model, audio and video modes
    │  └─ sanity_check.py              structural lint + plist validation
@@ -165,6 +187,7 @@ seek the exact frame instead of guessing from wall clock.
       ├─ TAMPER-EVIDENCE.md
       ├─ KIOSK-MODE.md
       ├─ MOTION.md
+      ├─ SHARING.md
       └─ MAC-HANDOFF.md
 ```
 
@@ -220,7 +243,7 @@ python scripts/release.py           # CI → tag → push → gh release, notes 
 `release.py` refuses to run on a dirty tree, on a branch other than `main`, on a version
 that has no CHANGELOG section, or when local CI fails.
 
-The macOS `build` job is the part that actually compiles and runs the 45 unit tests. It has
+The macOS `build` job is the part that actually compiles and runs the 54 unit tests. It has
 never executed — expect to fix a handful of things on its first run, and treat its first
 green as the real 1.0.
 
@@ -229,8 +252,8 @@ green as the real 1.0.
 Verified here, repeatedly:
 
 ```bash
-python scripts/local_ci.py                                 # 8 checks, all green
-python RecorderApp/Tools/sanity_check.py                   # 33 Swift files, 0 issues
+python scripts/local_ci.py                                 # 9 checks, all green
+python RecorderApp/Tools/sanity_check.py                   # 37 Swift files, 0 issues
 python RecorderApp/Tools/runtime_estimate.py --mode video   # the numbers above
 ```
 
@@ -238,7 +261,7 @@ Both local CI failure paths were exercised on purpose — an unclosed brace in a
 and a dead markdown link each turn it red.
 
 Not verified, because there is no Swift toolchain or iOS SDK on this machine:
-**compilation, the 45 unit tests, and every line of audio, camera and Keychain behaviour.**
+**compilation, the 54 unit tests, and every line of audio, camera and Keychain behaviour.**
 The Secure Enclave path cannot be exercised anywhere but a real device with a passcode —
 the simulator has no SE, which is why `SoftwareSigner` exists and why links record which one
 signed them.

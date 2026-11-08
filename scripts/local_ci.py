@@ -181,6 +181,32 @@ def svg_assets() -> list[str]:
     return problems
 
 
+def text_encoding() -> list[str]:
+    """Catch a file that was round-tripped through a non-UTF-8 shell.
+
+    This is not hypothetical: editing markdown from PowerShell with the default encoding
+    silently double-encodes every em dash and ellipsis, and the result looks fine until
+    someone reads it on GitHub.
+    """
+    markers = ("\u00c3", "\u00c2", "\u00e2\u20ac", "\ufffd")
+    problems: list[str] = []
+    for path in ROOT.glob("**/*"):
+        if not path.is_file() or path.suffix not in TEXT_SUFFIXES:
+            continue
+        if ".zwork" in path.parts or ".git" in path.parts:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            problems.append(f"{path.relative_to(ROOT)}: not valid UTF-8")
+            continue
+        for marker in markers:
+            if marker in text:
+                problems.append(f"{path.relative_to(ROOT)}: mojibake marker {marker!r}")
+                break
+    return problems
+
+
 def version_consistency() -> list[str]:
     version_file = ROOT / "VERSION"
     changelog = ROOT / "CHANGELOG.md"
@@ -232,6 +258,7 @@ def main() -> int:
     check("power model invariants", model_invariants())
     check("markdown links", markdown_links())
     check("infographic assets", svg_assets())
+    check("text encoding", text_encoding())
     check("version consistency", version_consistency())
     check("credential scan", leaked_credentials())
 
@@ -244,7 +271,7 @@ def main() -> int:
         return 1
 
     print("All local checks passed.")
-    print("Not covered here: Swift compilation and the 45 unit tests — those need macOS.")
+    print("Not covered here: Swift compilation and the 54 unit tests — those need macOS.")
     return 0
 
 

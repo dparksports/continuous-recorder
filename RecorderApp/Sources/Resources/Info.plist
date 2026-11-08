@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Continuous Recorder records video in hourly segments while the app is on screen. Video capture cannot continue while the display is off or the app is in the background — iOS does not allow it — so the recording pauses if you lock the screen.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID unlocks the recorded video so your Mac can copy it, for a few minutes at a time.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Continuous Recorder watches the accelerometer and gyroscope so that any movement of the device is recorded as an event, with a still frame every second while it is being moved.</string>
 	<key>NSMicrophoneUsageDescription</key>

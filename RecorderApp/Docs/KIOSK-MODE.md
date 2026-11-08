@@ -136,7 +136,8 @@ The budget stays what it was:
 - [ ] Clock synced before going offline; drift budget written down
 - [ ] Ventilation — sealed box plus continuous video equals thermal shutdown in hours
 - [ ] Passcode on the device and on Guided Access, held by someone accountable
-- [ ] `UIFileSharingEnabled` removed from `Info.plist` in production (`Docs/TAMPER-EVIDENCE.md`)
+- [ ] Recordings stay in `Library/Recordings`; Mac access only via the authenticated window
+      in `Docs/SHARING.md`, never a standing folder
 
 ## 7. Verifying it on the device
 

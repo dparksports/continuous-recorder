@@ -50,9 +50,16 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   hysteresis over acceleration, rotation and gravity; bump versus re-aim), `SnapshotGate` /
   `MotionSnapshotStore` (one 1280 px JPEG per second while moving, carrying the video PTS),
   `MotionEventRecorder` (event JSON containing every frame hash, signed as one chain link).
-- **Tests**: 45 unit tests covering energy arithmetic, coverage accounting, power
+- **Authenticated Mac sharing**: recordings moved out of `Documents` into `Library/Recordings`
+  (with a migration for earlier sessions), so File Sharing no longer exposes them at all.
+  `EvidenceShareController` opens a time-boxed window of hard links under `Documents/Share`
+  only after `LAContext` confirms the device owner (Face ID / Touch ID, passcode fallback),
+  closes it on expiry, backgrounding or device lock, purges stale windows at launch, and logs
+  every open and close to `share-access.jsonl`. `SharePlan` is pure and testable.
+- **Tests**: 54 unit tests covering energy arithmetic, coverage accounting, power
   policy, chain verification (including the truncation case the chain cannot catch), kiosk
-  policy / watermark formatting, and the motion classifier and snapshot gate.
+  policy / watermark formatting, the motion classifier and snapshot gate, and share planning
+  and session expiry.
 - **Tooling**: `Tools/runtime_estimate.py` (audio and video power/storage model),
   `Tools/sanity_check.py` (brace/string-aware structural lint, plist validation),
   `scripts/local_ci.py`, `scripts/release.py`.
