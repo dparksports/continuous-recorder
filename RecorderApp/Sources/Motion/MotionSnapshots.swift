@@ -82,7 +82,7 @@ struct MotionSnapshotStore {
         guard let data = Self.context.jpegRepresentation(
             of: scaled,
             colorSpace: CGColorSpaceCreateDeviceRGB(),
-            options: [.lossyCompressionQuality: Self.quality]
+            options: [.jpegCompressionQuality: Self.quality]
         ) else {
             return nil
         }
