@@ -55,15 +55,17 @@ jobs:
         working-directory: RecorderApp
         run: |
           set -o pipefail
+          # -quiet keeps warnings and errors and drops the progress spam. Do not pipe
+          # through `tail`: that is what hid the first round of compile errors.
           xcodebuild \
+            -quiet \
             -project RecorderApp.xcodeproj \
             -scheme RecorderApp \
             -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16' \
             -configuration Debug \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
-            test \
-            | tail -n 120
+            test 2>&1 | tee xcodebuild.log
 
       - name: Upload test results
         if: always()
