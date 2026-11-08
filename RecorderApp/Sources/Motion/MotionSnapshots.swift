@@ -2,6 +2,7 @@ import AVFoundation
 import CoreGraphics
 import CoreImage
 import Foundation
+import UIKit
 
 /// Decides whether a frame from the video stream should be turned into a still.
 ///
@@ -79,11 +80,13 @@ struct MotionSnapshotStore {
         let scale = min(1, Self.targetWidth / max(1, image.extent.width))
         let scaled = image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
 
-        guard let data = Self.context.jpegRepresentation(
-            of: scaled,
-            colorSpace: CGColorSpaceCreateDeviceRGB(),
-            options: [.jpegCompressionQuality: Self.quality]
-        ) else {
+        // CIImageRepresentationOption has no compression-quality member (the CG constant
+        // kCGImageDestinationLossyCompressionQuality is not bridged as one), so go through
+        // UIImage, which has a stable, documented quality knob.
+        guard let cgImage = Self.context.createCGImage(scaled, from: scaled.extent) else {
+            return nil
+        }
+        guard let data = UIImage(cgImage: cgImage).jpegData(compressionQuality: Self.quality) else {
             return nil
         }
 
