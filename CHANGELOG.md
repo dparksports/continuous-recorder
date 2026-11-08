@@ -16,6 +16,27 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   documented in the README.
 - No app icon, no launch artwork, no upload/sync, no file-browsing UI.
 
+## [0.1.1] - 2026-11-08
+
+First release that compiles. v0.1.0 was tagged before CI had ever run against this tree;
+it does not build and is superseded.
+
+### Fixed
+
+- Compile errors surfaced by the first macOS CI run: `Section(String)` has no `footer:`
+  overload; an exclusive-access violation read and wrote the same optional in one
+  expression; `CIImageRepresentationOption` has no compression-quality member, so motion
+  snapshots now render through `UIImage.jpegData`.
+- CI piped `xcodebuild` through `tail`, which discarded every diagnostic and left only
+  "Command SwiftCompile failed". It now runs `-quiet` and keeps the output.
+- `gh release create` takes assets positionally — `--attach` does not exist, and the release
+  script failed after the tag had already been pushed. Adds `--resume` for that case.
+
+### Verified
+
+- 61 unit tests pass on the iOS simulator (Xcode 16.4).
+- Static checks job green on Ubuntu.
+
 ## [0.1.0] - 2026-11-07
 
 ### Added
