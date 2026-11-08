@@ -100,7 +100,7 @@ struct ContentView: View {
     }
 
     private var settingsSection: some View {
-        Section("Settings") {
+        Section {
             Picker("Format", selection: $model.preset) {
                 ForEach(RecordingProfile.Preset.allCases) { preset in
                     Text(preset.title).tag(preset)
@@ -126,8 +126,10 @@ struct ContentView: View {
                     Text(device.name).tag(device.id)
                 }
             }
+        } header: {
+            Text("Settings")
         } footer: {
-            Text("Settings apply from the next segment. Files land in Files ▸ On My iPad ▸ Continuous Recorder ▸ Recordings.")
+            Text("Settings apply from the next segment. Recordings stay inside the app; unlock Mac access to copy them.")
         }
     }
 

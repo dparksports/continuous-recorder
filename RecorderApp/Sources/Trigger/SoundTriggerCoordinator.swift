@@ -92,8 +92,11 @@ final class SoundTriggerCoordinator {
 
             lock.lock()
             var finished = state.current
-            finished?.endedAt = Date()
-            finished?.peakLevelDB = max(finished?.peakLevelDB ?? peak, peak)
+            if var event = finished {
+                event.endedAt = Date()
+                event.peakLevelDB = max(event.peakLevelDB, peak)
+                finished = event
+            }
             state.isTriggered = false
             state.current = nil
             let event = finished ?? SoundTriggerEvent(
