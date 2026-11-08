@@ -55,6 +55,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run local CI, then tag and publish a release")
     parser.add_argument("--dry-run", action="store_true", help="print commands without running them")
     parser.add_argument("--skip-ci", action="store_true", help="only for re-running a release step")
+    parser.add_argument("--resume", action="store_true",
+                        help="the tag already exists and is pushed; just publish the release")
     args = parser.parse_args()
 
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -69,7 +71,10 @@ def main() -> int:
 
     existing = subprocess.run(["git", "tag", "--list", tag], cwd=ROOT,
                               text=True, capture_output=True, check=False)
-    require(existing.stdout.strip() == "", f"tag {tag} already exists")
+    if args.resume:
+        require(existing.stdout.strip() != "", f"tag {tag} does not exist — nothing to resume")
+    else:
+        require(existing.stdout.strip() == "", f"tag {tag} already exists (use --resume)")
 
     branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=ROOT,
                             text=True, capture_output=True, check=False).stdout.strip()
@@ -94,9 +99,12 @@ def main() -> int:
         notes_path = Path(handle.name)
 
     try:
-        tag_result = run(["git", "tag", "-a", tag, "-m", f"{tag}"], args.dry_run)
-        if not args.dry_run:
-            require(tag_result.returncode == 0, "could not create the tag")
+        if not args.resume:
+            tag_result = run(["git", "tag", "-a", tag, "-m", f"{tag}"], args.dry_run)
+            if not args.dry_run:
+                require(tag_result.returncode == 0, "could not create the tag")
+        else:
+            print(f"  (resuming — {tag} already exists)")
 
         push_result = run(["git", "push", "origin", branch], args.dry_run)
         if not args.dry_run:
@@ -111,8 +119,10 @@ def main() -> int:
                 "gh", "release", "create", tag,
                 "--title", f"Continuous Recorder {tag}",
                 "--notes-file", str(notes_path),
-                "--attach", "assets/runtime-budget.png",
-                "--attach", "assets/tamper-chain.png",
+                # Assets are positional arguments on `release create`; there is no
+                # --attach flag (that lives on `gh release upload`).
+                "assets/runtime-budget.png",
+                "assets/tamper-chain.png",
             ],
             args.dry_run,
         )
