@@ -50,6 +50,8 @@ COMPONENTS = {
     "HEVC encode (1080p15)": (0.08, 0.18, 0.32),
     "HEVC encode (1080p30)": (0.14, 0.35, 0.60),
     "HEVC encode (4K30)": (0.30, 0.60, 1.00),
+    "Camera sensor + ISP (1 fps dormant)": (0.35, 0.55, 0.85),
+    "HEVC encode (1 fps)": (0.01, 0.02, 0.04),
     "Display lit at 0% backlight": (0.15, 0.35, 0.60),
     "Storage I/O (video bitrate)": (0.02, 0.04, 0.08),
 }
@@ -86,6 +88,9 @@ VIDEO_SCENARIOS = [
     ("1080p15 HEVC, brightness 25%",
      ["SoC idle + OS background", "Camera sensor + ISP (1080p)", "HEVC encode (1080p15)",
       "Screen on, 25% brightness (11\" LCD)", "Storage I/O (video bitrate)"], "panel left readable"),
+    ("Dormant 1 fps, sound-triggered",
+     ["SoC idle + OS background", "Camera sensor + ISP (1 fps dormant)", "HEVC encode (1 fps)",
+      "Display lit at 0% backlight", "Storage I/O (video bitrate)"], "listening; 15 fps on trigger"),
     ("4K30 HEVC 12 Mbps, brightness 0",
      ["SoC idle + OS background", "Camera sensor + ISP (4K)", "HEVC encode (4K30)",
       "Display lit at 0% backlight", "Storage I/O (video bitrate)"], "highest quality"),

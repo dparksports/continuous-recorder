@@ -88,6 +88,8 @@ final class HourlyVideoRecorder: NSObject {
     private var segmentDroppedFrames = 0
     private var isRunning = false
     private var currentFrameRate: Int32 = 15
+    private var requestedFramesPerSecond: Int32 = 15
+    private var thermalCap: Int32 = 30
 
     // MARK: - Permission
 
@@ -150,15 +152,29 @@ final class HourlyVideoRecorder: NSObject {
 
     /// Drops to a lower frame rate in the heat rather than cooking the battery: 15 fps →
     /// 10 fps cuts the ISP and encoder load by a third and costs nothing for surveillance.
+    ///
+    /// The thermal cap and the sound trigger both want to set the rate, so the trigger
+    /// *requests* and thermal *caps*. Otherwise a hot device in a quiet room would be put
+    /// back to 10 fps by the thermal policy seconds after the trigger dropped it to 1.
     func applyThermalPolicy(_ state: ProcessInfo.ThermalState) {
-        guard isRunning else { return }
-        let target: Int32
         switch state {
-        case .serious:  target = 10
-        case .critical: target = 5
-        default:        return
+        case .serious:  thermalCap = 10
+        case .critical: thermalCap = 5
+        default:        thermalCap = 30
         }
-        guard target != currentFrameRate else { return }
+        applyFrameRate()
+    }
+
+    /// Switches capture rate at runtime — dormant (1 fps) versus full (15 fps).
+    func setFramesPerSecond(_ fps: Int32) {
+        requestedFramesPerSecond = fps
+        applyFrameRate()
+    }
+
+    private func applyFrameRate() {
+        guard isRunning else { return }
+        let target = min(requestedFramesPerSecond, thermalCap)
+        guard target > 0, target != currentFrameRate else { return }
         currentFrameRate = target
 
         guard let device = (session.inputs.first as? AVCaptureDeviceInput)?.device else { return }
@@ -169,9 +185,9 @@ final class HourlyVideoRecorder: NSObject {
                 device.activeVideoMinFrameDuration = duration
                 device.activeVideoMaxFrameDuration = duration
                 device.unlockForConfiguration()
-                Log.power.notice("video frame rate → \(target) fps (thermal \(state.rawValue))")
+                Log.power.notice("video frame rate → \(target) fps")
             } catch {
-                Log.audio.error("could not lower frame rate: \(error.localizedDescription, privacy: .public)")
+                Log.audio.error("could not set frame rate: \(error.localizedDescription, privacy: .public)")
             }
         }
     }

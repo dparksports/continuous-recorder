@@ -55,6 +55,11 @@ final class SegmentedRecorder {
     var onGapRecorded: ((GapRecord) -> Void)?
     var onAutoStop: ((String) -> Void)?
 
+    /// True RMS of each captured buffer, in dBFS, delivered on the audio thread.
+    /// This is what the sound trigger listens to: the audio path is already running, so the
+    /// level is a by-product of a loop we have to do anyway rather than an extra sensor.
+    var onAudioLevelDB: ((Double) -> Void)?
+
     /// User settings, re-read at every segment boundary so changes apply without
     /// interrupting the file currently being written.
     var profileProvider: (() -> RecordingProfile)?
@@ -283,8 +288,11 @@ final class SegmentedRecorder {
             return
         }
 
-        if let level = Self.rmsLevel(buffer) {
-            smoothedLevel = smoothedLevel * 0.85 + level * 0.15
+        if let rms = Self.rms(buffer) {
+            smoothedLevel = smoothedLevel * 0.85 + min(1, rms * 6) * 0.15
+            if let onAudioLevelDB {
+                onAudioLevelDB(Double(20 * log10(max(rms, 1e-10))))
+            }
         }
 
         if Date().timeIntervalSince(writer.startedAt) >= profile.segmentDuration {
@@ -504,7 +512,9 @@ final class SegmentedRecorder {
         return Int64(seconds * Double(writer.bitRate) / 8)
     }
 
-    private static func rmsLevel(_ buffer: AVAudioPCMBuffer) -> Float? {
+    /// Linear RMS of the buffer. The level meter scales this for display; the sound trigger
+    /// converts it to dBFS, which is the only form with a stable meaning across devices.
+    private static func rms(_ buffer: AVAudioPCMBuffer) -> Float? {
         guard let data = buffer.floatChannelData, buffer.frameLength > 0 else { return nil }
         let frames = Int(buffer.frameLength)
         let channels = Int(buffer.format.channelCount)
@@ -519,7 +529,6 @@ final class SegmentedRecorder {
             }
         }
         let mean = sum / Float(frames * channels)
-        // Display-only mapping: useful on a meter, not a calibrated dBFS reading.
-        return min(1, sqrt(mean) * 6)
+        return sqrt(mean)
     }
 }

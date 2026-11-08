@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-lightgrey)
-![Tests](https://img.shields.io/badge/unit%20tests-54-lightgrey)
+![Tests](https://img.shields.io/badge/unit%20tests-61-lightgrey)
 ![Status](https://img.shields.io/badge/build-never%20compiled-orange)
 
 A native SwiftUI app for an always-on iPad: continuous audio that survives screen lock, an
@@ -94,6 +94,31 @@ redundancy — for retrieval, for alerting, and for the hour a power cut leaves 
 not the proof itself. Each snapshot carries its video presentation time, so a reviewer can
 seek the exact frame instead of guessing from wall clock.
 
+## Sound trigger: dormant, then full rate
+
+The audio path is always running, so sampling for sound costs nothing extra:
+`AudioTriggerAnalyzer` takes one RMS per audio buffer — 4096 frames at 48 kHz, ~85 ms, about
+**12 decisions a second** — and converts it to dBFS.
+
+The threshold is **relative to a tracked noise floor**, not absolute. `level > -40 dBFS` fails
+the first time the device sits near a fridge: the room is permanently above it, so the
+recorder never sleeps. The floor tracks down immediately, rises with a 200-second time
+constant, and is frozen while an event is open so a long alarm cannot become the new normal.
+Open at floor + 12 dB held 150 ms; close at floor + 6 dB held 5 s.
+
+What it buys is **32%, not 15×** — and that is the number worth internalising:
+
+| Mode | Draw | 11" |
+|---|---|---|
+| Full 1080p15 | 1.60 W | 16.3 h |
+| Dormant 1 fps, sound-triggered | 1.09 W | 23.9 h |
+| Audio only, camera closed | 0.22 W | 118 h |
+
+The camera costs what it costs because it is *open*, not because it is fast. If you want days
+rather than hours, it has to close while dormant and eat the ~1 s startup on trigger.
+[`Docs/SOUND-TRIGGER.md`](RecorderApp/Docs/SOUND-TRIGGER.md) has the sampling table, the
+pre-roll options, and the failure mode where the app triggers itself.
+
 ## Sharing with a Mac, behind Face ID
 
 `UIFileSharingEnabled` is read at launch and cannot be gated at runtime, so the gate is on the
@@ -175,9 +200,12 @@ closed. Details, including what this does not protect against:
    │  │  ├─ SharePlan.swift            which files, and what truncation costs
    │  │  ├─ DeviceAuthenticator.swift  LAContext seam; Face ID + passcode fallback
    │  │  └─ EvidenceShareController.swift  hard-link window, timers, access log
+   │  ├─ Trigger/
+   │  │  ├─ AudioTriggerAnalyzer.swift  adaptive noise floor, hysteresis
+   │  │  └─ SoundTriggerCoordinator.swift  dormant 1 fps ↔ full 15 fps
    │  ├─ UI/                           RecorderViewModel + ContentView
    │  └─ Resources/Info.plist          mic + camera usage, background audio
-   ├─ Tests/                          54 unit tests
+   ├─ Tests/                          61 unit tests
    ├─ Tools/
    │  ├─ runtime_estimate.py          power/storage model, audio and video modes
    │  └─ sanity_check.py              structural lint + plist validation
@@ -188,6 +216,7 @@ closed. Details, including what this does not protect against:
       ├─ KIOSK-MODE.md
       ├─ MOTION.md
       ├─ SHARING.md
+      ├─ SOUND-TRIGGER.md
       └─ MAC-HANDOFF.md
 ```
 
@@ -243,7 +272,7 @@ python scripts/release.py           # CI → tag → push → gh release, notes 
 `release.py` refuses to run on a dirty tree, on a branch other than `main`, on a version
 that has no CHANGELOG section, or when local CI fails.
 
-The macOS `build` job is the part that actually compiles and runs the 54 unit tests. It has
+The macOS `build` job is the part that actually compiles and runs the 61 unit tests. It has
 never executed — expect to fix a handful of things on its first run, and treat its first
 green as the real 1.0.
 
@@ -253,7 +282,7 @@ Verified here, repeatedly:
 
 ```bash
 python scripts/local_ci.py                                 # 9 checks, all green
-python RecorderApp/Tools/sanity_check.py                   # 37 Swift files, 0 issues
+python RecorderApp/Tools/sanity_check.py                   # 40 Swift files, 0 issues
 python RecorderApp/Tools/runtime_estimate.py --mode video   # the numbers above
 ```
 
@@ -261,7 +290,7 @@ Both local CI failure paths were exercised on purpose — an unclosed brace in a
 and a dead markdown link each turn it red.
 
 Not verified, because there is no Swift toolchain or iOS SDK on this machine:
-**compilation, the 54 unit tests, and every line of audio, camera and Keychain behaviour.**
+**compilation, the 61 unit tests, and every line of audio, camera and Keychain behaviour.**
 The Secure Enclave path cannot be exercised anywhere but a real device with a passcode —
 the simulator has no SE, which is why `SoftwareSigner` exists and why links record which one
 signed them.

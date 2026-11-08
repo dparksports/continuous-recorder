@@ -271,7 +271,7 @@ def main() -> int:
         return 1
 
     print("All local checks passed.")
-    print("Not covered here: Swift compilation and the 54 unit tests — those need macOS.")
+    print("Not covered here: Swift compilation and the 61 unit tests — those need macOS.")
     return 0
 
 

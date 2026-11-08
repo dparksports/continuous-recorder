@@ -56,10 +56,14 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   only after `LAContext` confirms the device owner (Face ID / Touch ID, passcode fallback),
   closes it on expiry, backgrounding or device lock, purges stale windows at launch, and logs
   every open and close to `share-access.jsonl`. `SharePlan` is pure and testable.
-- **Tests**: 54 unit tests covering energy arithmetic, coverage accounting, power
+- **Sound-triggered escalation**: `AudioTriggerAnalyzer` (dBFS per audio buffer against a
+  tracked noise floor: +12 dB held 150 ms to open, +6 dB held 5 s to close, floor frozen
+  while open) and `SoundTriggerCoordinator` (dormant 1 fps ↔ full 15 fps, thermally capped).
+  `SegmentedRecorder` now publishes true RMS in dBFS from the existing tap.
+- **Tests**: 61 unit tests covering energy arithmetic, coverage accounting, power
   policy, chain verification (including the truncation case the chain cannot catch), kiosk
-  policy / watermark formatting, the motion classifier and snapshot gate, and share planning
-  and session expiry.
+  policy / watermark formatting, the motion classifier and snapshot gate, share planning and
+  session expiry, and the sound trigger's adaptive floor and hysteresis.
 - **Tooling**: `Tools/runtime_estimate.py` (audio and video power/storage model),
   `Tools/sanity_check.py` (brace/string-aware structural lint, plist validation),
   `scripts/local_ci.py`, `scripts/release.py`.
