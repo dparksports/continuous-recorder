@@ -40,8 +40,15 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Tamper evidence** (`TamperChain`, `SecureEnclaveSigner`): SHA-256 hash chain, one
   signed link per closed file, non-exportable ECDSA P-256 key, canonical payload
   encoding specified for cross-language verification, plus `ChainVerifier`.
-- **Tests**: 22 unit tests covering energy arithmetic, coverage accounting, power
-  policy and chain verification (including the truncation case the chain cannot catch).
+- **Kiosk mode**: `KioskController` (Guided Access session request, brightness floor,
+  idle-timer override, restore on exit), `RadioMonitor` (detects a network path and records
+  anomalies — it cannot disable radios), `TelemetryFormat` / `TelemetryWatermark` (drifting
+  top-edge stamp with timestamp, battery and charging state), `WatermarkComposer` (optional
+  burn-in, applied before the hash so the chain covers the stamped bytes), and
+  `UIRequiresFullScreen` to block Slide Over.
+- **Tests**: 34 unit tests covering energy arithmetic, coverage accounting, power
+  policy, chain verification (including the truncation case the chain cannot catch) and the
+  kiosk policy / watermark formatting rules.
 - **Tooling**: `Tools/runtime_estimate.py` (audio and video power/storage model),
   `Tools/sanity_check.py` (brace/string-aware structural lint, plist validation),
   `scripts/local_ci.py`, `scripts/release.py`.

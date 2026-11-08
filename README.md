@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Platform](https://img.shields.io/badge/platform-iOS%2017%2B-lightgrey)
-![Tests](https://img.shields.io/badge/unit%20tests-22-lightgrey)
+![Tests](https://img.shields.io/badge/unit%20tests-34-lightgrey)
 ![Status](https://img.shields.io/badge/build-never%20compiled-orange)
 
 A native SwiftUI app for an always-on iPad: continuous audio that survives screen lock, an
@@ -54,6 +54,26 @@ that is asserted in a test, and the fix is an off-device anchor plus a 60-second
 not more cryptography. Full threat model:
 [`Docs/TAMPER-EVIDENCE.md`](RecorderApp/Docs/TAMPER-EVIDENCE.md).
 
+## Kiosk mode
+
+Four requirements, three of which are deployment configuration rather than code:
+
+| Requirement | Possible? | What actually does it |
+|---|---|---|
+| Only this app runs | Partly | `UIAccessibility.requestGuidedAccessSession` when Guided Access is enabled; MDM single-app mode on a supervised device |
+| Zero brightness | Yes | `UIScreen.brightness = 0` — but at 0 the watermark is invisible, so the default floor is 0.04, worth about 12 minutes of runtime |
+| All radios off | **No** | Airplane Mode, set by a human or MDM. The app can only observe `NWPathMonitor` and record when a path appears mid-session |
+| Timestamp + battery + charging stamp | Yes | `TelemetryWatermark` on screen (drifting, so it cannot burn in); `WatermarkComposer` burns it into the file |
+
+The ordering constraint is the interesting one: `finishWriting → burn → SHA-256 → chain link`.
+Hash first and you sign bytes that no longer exist on disk, so every file verifies as
+tampered. Burning costs a full re-encode per segment (+40–100% energy per recorded hour), so
+it is a mains-only option; the chain payload carries the same numbers for free.
+
+[`Docs/KIOSK-MODE.md`](RecorderApp/Docs/KIOSK-MODE.md) covers the Guided Access and MDM
+tiers, what `NWPathMonitor` does and does not prove, and the clock-drift consequence of
+Airplane Mode on a watermark that is supposed to be evidence.
+
 ## Why the code looks the way it does
 
 | Decision | Reason |
@@ -101,9 +121,16 @@ not more cryptography. Full threat model:
    │  │  ├─ PowerGovernor.swift        stop/downgrade policy
    │  │  ├─ EnergyModel.swift          capacity, hours, observed-watts meter
    │  │  └─ Locked.swift               lock wrapper for audio-thread values
+   │  ├─ Kiosk/
+   │  │  ├─ KioskController.swift      Guided Access, brightness floor, idle timer
+   │  │  ├─ KioskStatus.swift         what a healthy kiosk looks like, as data
+   │  │  ├─ RadioMonitor.swift        NWPathMonitor; cannot disable radios, only observe
+   │  │  ├─ TelemetryFormat.swift     deterministic stamp text + drift
+   │  │  ├─ TelemetryWatermark.swift  the on-screen stamp and issue list
+   │  │  └─ WatermarkComposer.swift   optional burn-in before hashing
    │  ├─ UI/                           RecorderViewModel + ContentView
    │  └─ Resources/Info.plist          mic + camera usage, background audio
-   ├─ Tests/                          22 unit tests
+   ├─ Tests/                          34 unit tests
    ├─ Tools/
    │  ├─ runtime_estimate.py          power/storage model, audio and video modes
    │  └─ sanity_check.py              structural lint + plist validation
@@ -111,6 +138,7 @@ not more cryptography. Full threat model:
       ├─ RUNTIME-ESTIMATE.md
       ├─ POWER-AND-DISPLAY.md
       ├─ TAMPER-EVIDENCE.md
+      ├─ KIOSK-MODE.md
       └─ MAC-HANDOFF.md
 ```
 
@@ -166,7 +194,7 @@ python scripts/release.py           # CI → tag → push → gh release, notes 
 `release.py` refuses to run on a dirty tree, on a branch other than `main`, on a version
 that has no CHANGELOG section, or when local CI fails.
 
-The macOS `build` job is the part that actually compiles and runs the 22 unit tests. It has
+The macOS `build` job is the part that actually compiles and runs the 34 unit tests. It has
 never executed — expect to fix a handful of things on its first run, and treat its first
 green as the real 1.0.
 
@@ -176,7 +204,7 @@ Verified here, repeatedly:
 
 ```bash
 python scripts/local_ci.py                                 # 8 checks, all green
-python RecorderApp/Tools/sanity_check.py                   # 21 Swift files, 0 issues
+python RecorderApp/Tools/sanity_check.py                   # 28 Swift files, 0 issues
 python RecorderApp/Tools/runtime_estimate.py --mode video   # the numbers above
 ```
 
@@ -184,7 +212,7 @@ Both local CI failure paths were exercised on purpose — an unclosed brace in a
 and a dead markdown link each turn it red.
 
 Not verified, because there is no Swift toolchain or iOS SDK on this machine:
-**compilation, the 22 unit tests, and every line of audio, camera and Keychain behaviour.**
+**compilation, the 34 unit tests, and every line of audio, camera and Keychain behaviour.**
 The Secure Enclave path cannot be exercised anywhere but a real device with a passcode —
 the simulator has no SE, which is why `SoftwareSigner` exists and why links record which one
 signed them.
