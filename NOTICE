@@ -1,0 +1,14 @@
+Continuous Recorder
+Copyright 2026 Dan Park
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full text.
+
+Third-party components
+----------------------
+None bundled. The app is written against Apple system frameworks
+(AVFoundation, CryptoKit, Security, SwiftUI, UIKit) which ship with iOS
+and are not redistributed here.
+
+The diagrams in assets/ are hand-authored SVG using the reader's system
+font stack; no font files are embedded or redistributed.

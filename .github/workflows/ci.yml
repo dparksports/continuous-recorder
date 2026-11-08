@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install YAML parser
+        run: pip install --quiet pyyaml
+
+      - name: Local CI suite
+        run: python scripts/local_ci.py
+
+      - name: Model output (audio)
+        run: python RecorderApp/Tools/runtime_estimate.py --markdown
+
+      - name: Model output (video)
+        run: python RecorderApp/Tools/runtime_estimate.py --mode video --markdown
+
+  build:
+    name: Build and test (Xcode 16, iOS Simulator)
+    # NOTE: this job has never run. It is the first real compile gate for a codebase
+    # written on Windows; expect to fix a few things here before the badge is green.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: RecorderApp
+        run: xcodegen generate
+
+      - name: Show available simulators
+        run: xcrun simctl list devices available | grep -i ipad | head -n 5 || true
+
+      - name: Build and test
+        working-directory: RecorderApp
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project RecorderApp.xcodeproj \
+            -scheme RecorderApp \
+            -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16' \
+            -configuration Debug \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            test \
+            | tail -n 120
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: RecorderApp/build/Logs/Test/*.xcresult
+          if-no-files-found: ignore
+          retention-days: 7

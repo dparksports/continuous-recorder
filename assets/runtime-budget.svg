@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="t1 d1">
+  <title id="t1">Hours of continuous recording per charge, iPad Air 11-inch</title>
+  <desc id="d1">Bar chart: 118 hours recording audio with the screen locked, 30 hours with the screen on at 25 percent, 16.3 hours recording 1080p video at 15 fps with brightness at zero, 9.9 hours recording 4K video. Video costs about 86 percent of the runtime.</desc>
+
+  <rect width="1200" height="700" fill="#f5f5f5"/>
+
+  <!-- title block -->
+  <text x="60" y="78" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="34" font-weight="700" fill="#2d3142">One charge, four recording modes</text>
+  <text x="60" y="110" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" fill="#6b7280">iPad Air 11-inch · 28.93 Wh · modelled from 100% down to a 10% reserve</text>
+
+  <!-- legend -->
+  <rect x="892" y="62" width="12" height="12" rx="2" fill="#2d3142"/>
+  <text x="912" y="73" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">audio</text>
+  <rect x="972" y="62" width="12" height="12" rx="2" fill="#eb6c36"/>
+  <text x="992" y="73" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">video</text>
+
+  <!-- axis label -->
+  <text x="280" y="152" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="1.4" fill="#9aa1ac">HOURS OF RECORDING PER CHARGE · LINEAR SCALE</text>
+
+  <!-- gridlines -->
+  <g stroke="#2d3142" stroke-opacity="0.08" stroke-width="1">
+    <line x1="280" y1="176" x2="280" y2="556"/>
+    <line x1="475" y1="176" x2="475" y2="556"/>
+    <line x1="670" y1="176" x2="670" y2="556"/>
+    <line x1="865" y1="176" x2="865" y2="556"/>
+    <line x1="1060" y1="176" x2="1060" y2="556"/>
+  </g>
+
+  <!-- row 1: audio, locked -->
+  <text x="264" y="221" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#2d3142">Audio · screen locked</text>
+  <text x="264" y="241" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">48 kbps mono, airplane mode</text>
+  <rect x="280" y="200" width="767" height="52" rx="4" fill="#2d3142"/>
+  <text x="1061" y="234" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#2d3142">118 h</text>
+
+  <!-- row 2: audio, screen on -->
+  <text x="264" y="309" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#2d3142">Audio · screen on at 25%</text>
+  <text x="264" y="329" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">same encoder, panel awake</text>
+  <rect x="280" y="288" width="195" height="52" rx="4" fill="#2d3142"/>
+  <text x="489" y="322" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#2d3142">30 h</text>
+
+  <!-- row 3: video 1080p -->
+  <text x="264" y="397" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#2d3142">Video · 1080p15 HEVC</text>
+  <text x="264" y="417" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">brightness 0, no preview layer</text>
+  <rect x="280" y="376" width="106" height="52" rx="4" fill="#eb6c36"/>
+  <text x="400" y="410" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#eb6c36">16.3 h</text>
+
+  <!-- row 4: video 4K -->
+  <text x="264" y="485" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#2d3142">Video · 4K30 HEVC</text>
+  <text x="264" y="505" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">brightness 0</text>
+  <rect x="280" y="464" width="64" height="52" rx="4" fill="#eb6c36"/>
+  <text x="358" y="498" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#eb6c36">9.9 h</text>
+
+  <!-- callout -->
+  <rect x="560" y="356" width="400" height="100" rx="6" fill="#ffffff"/>
+  <rect x="560" y="356" width="4" height="100" rx="2" fill="#eb6c36"/>
+  <text x="584" y="392" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="26" font-weight="700" fill="#2d3142">7.2× fewer hours</text>
+  <text x="584" y="418" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" fill="#6b7280">The same charge buys 118 h of audio</text>
+  <text x="584" y="438" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="15" fill="#6b7280">or 16 h of video. Nothing else changes.</text>
+
+  <!-- axis -->
+  <line x1="280" y1="556" x2="1060" y2="556" stroke="#2d3142" stroke-opacity="0.18" stroke-width="1"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#9aa1ac" text-anchor="middle">
+    <text x="280" y="580">0</text>
+    <text x="475" y="580">30 h</text>
+    <text x="670" y="580">60 h</text>
+    <text x="865" y="580">90 h</text>
+    <text x="1060" y="580">120 h</text>
+  </g>
+
+  <!-- footer -->
+  <line x1="60" y1="616" x2="1140" y2="616" stroke="#2d3142" stroke-opacity="0.12"/>
+  <text x="60" y="644" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">Model output, not a measurement — recompute with <tspan font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" fill="#2d3142">python RecorderApp/Tools/runtime_estimate.py</tspan></text>
+  <text x="60" y="666" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="13" fill="#6b7280">Screen locked really does mean the panel is off. Video cannot do that: locking the device suspends camera capture.</text>
+</svg>
